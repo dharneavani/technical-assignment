@@ -6,6 +6,8 @@ import { Product } from './entities/product.entity';
 import { Repository } from 'typeorm';
 import { Task } from '../task/entities/task.entity';
 
+import { Property } from '../property/entities/property.entity';
+
 type ProductWithTasks = Product & { tasks?: Task[] };
 
 @Injectable()
@@ -13,21 +15,32 @@ export class ProductService {
   constructor(
     @InjectRepository(Product) private _repository: Repository<Product>,
     @InjectRepository(Task) private _taskRepository: Repository<Task>,
+    @InjectRepository(Task) private _propertyRepository: Repository<Property>,
+
   ) {}
 
-  create(createProductDto: CreateProductDto) {
-    return this._repository.save(createProductDto);
+ 
+
+  async create(createProductDto: any): Promise<Product> {
+    const product = new Product();
+    product.name = createProductDto.name;
+
+    product.properties = createProductDto.properties.map((prop) => {
+      const property = new Property();
+      property.key = prop.key;
+      property.value = prop.value;
+      return property;
+    });
+
+    return this._repository.save(product);
   }
 
   async findAll() {
-    const products: ProductWithTasks[] = await this._repository.find();
-
-    for (const product of products) {
-      product.tasks = await this._taskRepository.find({
-        where: { product: { id: product.id } },
-      });
-    }
-
+    const products = await this._repository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.tasks', 'task')
+      .getMany();
+  
     return products;
   }
 

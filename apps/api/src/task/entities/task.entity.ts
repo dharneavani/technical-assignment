@@ -16,6 +16,7 @@ export class Task {
   dueAt: Date;
 
   @ManyToOne(() => Product, (product) => product.tasks)
+  @JoinColumn({ name: 'productId' })
   product: Product;
 
   @CreateDateColumn({ update: false, nullable: false })

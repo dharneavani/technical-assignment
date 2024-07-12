@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task } from './entities/task.entity';
@@ -13,9 +13,21 @@ export class TaskService {
     @InjectRepository(Product) private _productRepository: Repository<Product>,
   ) {}
 
-  async create(createTaskDto: CreateTaskDto) {
-    // @fixme createTaskDto.productId is not being saved to the task
-    return this._repository.save(createTaskDto);
+  async create(createTaskDto: CreateTaskDto): Promise<Task> {
+    const task = new Task();
+    task.title = createTaskDto.title;
+    task.description = createTaskDto.description;
+    task.dueAt = new Date(createTaskDto.dueAt);
+
+    if (createTaskDto.productId) {
+      const product = await this._productRepository.findOne({ where: { id: createTaskDto.productId } });
+      if (!product) {
+        throw new NotFoundException('Product not found');
+      }
+      task.product = product; 
+    }
+
+    return this._repository.save(task);
   }
 
   findAll() {

@@ -5,5 +5,4 @@ export class CreateProductDto {
   name: string;
 
   @IsOptional()
-  properties?: Record<string, any>;
-}
+  properties: { key: string; value: string }[];}

@@ -19,7 +19,9 @@
         <td class="p-4 border-b">
           {{ product.updatedAt | date: "dd/MM/yyyy HH:mm" }}
         </td>
+        
         <td class="p-4 border-b">
+
           <button (click)="deleteProduct(product.id, $event)">
             <svg
               xmlns="http://www.w3.org/2000/svg"

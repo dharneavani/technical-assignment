@@ -3,7 +3,7 @@ import { Product, ProductsService } from '../../services/products.service';
 import { Observable } from 'rxjs';
 import { AsyncPipe, DatePipe, NgFor } from '@angular/common';
 import { Router } from '@angular/router';
-
+import { ConfirmationDialogService } from './../../services/DialogService/confirmation-dialog.service';
 @Component({
   selector: 'app-products',
   standalone: true,
@@ -17,6 +17,7 @@ export class ProductsComponent implements OnInit {
   constructor(
     private _service: ProductsService,
     private _router: Router,
+    private confirmationDialogService: ConfirmationDialogService,
   ) {}
 
   ngOnInit(): void {
@@ -31,9 +32,23 @@ export class ProductsComponent implements OnInit {
     this._router.navigate(['products', id]);
   }
 
+
+ 
   async deleteProduct(id: string, event: Event) {
-    // @todo add custom confirmation dialog here - following a similar design
-    event.stopPropagation();
+
+      this.confirmationDialogService.confirm(
+        'Are you sure you want to delete this product?',
+        () => {
+          this._service.delete(id).subscribe(() => this.loadProducts())
+          event.stopPropagation();
+
+        },
+        () => {
+          event.stopPropagation();
+
+        }
+      );
+    
     this._service.delete(id).subscribe(() => this.loadProducts())
   }
 }
